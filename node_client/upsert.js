@@ -14,35 +14,30 @@ function buildSessionOptionsFromURL(urlStr) {
 
 	var result = {
 		reconnect: false,
-	    host : url.hostname,
-	    rootTopic : url.pathname.substring(1)
+		host : url.hostname,
+		rootTopic : url.pathname.substring(1)
 	};
 
 	if (null !== url.port) {
-	    result.port = url.port;
+		result.port = url.port;
 	}
 
 	if (null !== url.auth) {
-	    const urlCredentials = url.auth.split(":");
-	    result.principal = urlCredentials[0];
-	    result.credentials = urlCredentials[1];
+		const urlCredentials = url.auth.split(":");
+		result.principal = urlCredentials[0];
+		result.credentials = urlCredentials[1];
 	}
 
 	return result;
 }
 
-function usage() {
-    console.log("Usage:", process.argv[1], "ws://username:password@somehost:80/some/root/topic topic-value");
-}
-
 if (process.argv.length < 4) {
-    usage();
+    console.log("Usage:", process.argv[1], "ws://username:password@somehost:80/some/root/topic topic-value");
     process.exit(0);
 }
 
 const urlStr = process.argv[2];
 const topicContent = process.argv[3];
-
 const sessionOptions = buildSessionOptionsFromURL(urlStr);
 
 diffusion.connect(sessionOptions).then(function(session){
