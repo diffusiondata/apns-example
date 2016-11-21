@@ -237,7 +237,7 @@
                             completionHandler:^(NSError * _Nullable error) {
                                 if(error != nil) {
                                     [Common displayAlert:error.localizedDescription
-                                               withTitle:@"Send to topic failed"];gith
+                                               withTitle:@"Send to topic failed"];
 
                                 }
                             }];
