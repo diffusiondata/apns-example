@@ -1,13 +1,9 @@
 {
   "name": "upsert-example.js",
   "version": "1.0.0",
-  "description": "",
+  "description": "An illustrative NodeJS script that creates or updates a Diffusion topic with a value",
   "main": "upsert.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Push Technology",
-  "license": "ISC",
   "dependencies": {
     "diffusion": "^5.9.1"
   }

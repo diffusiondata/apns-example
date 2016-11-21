@@ -32,7 +32,7 @@ function buildSessionOptionsFromURL(urlStr) {
 }
 
 function usage() {
-    console.log("Usage:", process.argv[1], "ws://username:password@somehost:80/some/root/topic topic-content");
+    console.log("Usage:", process.argv[1], "ws://username:password@somehost:80/some/root/topic topic-value");
 }
 
 if (process.argv.length < 4) {
