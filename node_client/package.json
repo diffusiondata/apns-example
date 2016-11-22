@@ -5,6 +5,7 @@
   "main": "upsert.js",
   "author": "Push Technology",
   "dependencies": {
+    "commander": "^2.9.0",
     "diffusion": "^5.9.1"
   }
 }

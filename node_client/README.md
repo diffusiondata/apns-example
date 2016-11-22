@@ -1,6 +1,6 @@
 # Synopsis
 
-An illustrative NodeJS script that creates or updates a Diffusion topic with a value
+An illustrative NodeJS script that creates or updates a Diffusion SingleValue topic with a value.
 
 # Installation
 
