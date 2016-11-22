@@ -1,25 +1,31 @@
 //
 //  ViewController.m
-//  APNSExample
 //
-//  Created by Martin Cowie on 07/11/2016.
-//  Copyright © 2016 EXAMPLE. All rights reserved.
+//  Copyright (C) 2016 Push Technology Ltd.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 #import "ViewController.h"
 #import "Common.h"
+#import "NSString+Flatten.h"
 
 #define SERVICE_TOPIC @"push/notifications"
 
 /*
  * Tags used in the storyboard to identify UITableViewCells of note
  */
-#define TAP_SESSION_ID 10
-#define TAP_PN_SUBSCRIBE 20
-#define TAP_PN_UNSUBSCRIBE 21
-
-@interface ViewController ()
-@end
+static const char sessionIdTag = 10;
+static const char pnSubscribeTag = 20;
+static const char pnUnsubscribeTag = 21;
 
 @implementation ViewController
 
@@ -30,42 +36,47 @@
 
     [nc addObserver:self
            selector:@selector(didRegisterForRemoteNotificationsWithDeviceToken:)
-               name:@"didRegisterForRemoteNotificationsWithDeviceToken"
+               name:didRegisterForRemoteNotificationsWithDeviceToken
              object:nil];
 
     [nc addObserver:self
            selector:@selector(didFailToRegisterForRemoteNotificationsWithError:)
-               name:@"didFailToRegisterForRemoteNotificationsWithError"
+               name:didFailToRegisterForRemoteNotificationsWithError
              object:nil];
 
     [nc addObserver:self
            selector:@selector(activate)
-               name:@"didFinishLaunchingWithOptions"
-             object:nil];
-
-    [nc addObserver:self
-           selector:@selector(activate)
-               name:@"applicationWillEnterForeground"
+               name:applicationWillEnterForeground
              object:nil];
 
     [nc addObserver:self
            selector:@selector(deactivate)
-               name:@"applicationDidEnterBackground"
+               name:applicationDidEnterBackground
              object:nil];
 
-    [self addObserver:self forKeyPath:@"deviceToken" options:NSKeyValueObservingOptionNew context:nil];
-    [self addObserver:self forKeyPath:@"session" options:NSKeyValueObservingOptionNew context:nil];
+    [self addObserver:self
+           forKeyPath:@"deviceToken"
+              options:NSKeyValueObservingOptionNew
+              context:nil];
+
+    [self addObserver:self
+           forKeyPath:@"session"
+              options:NSKeyValueObservingOptionNew
+              context:nil];
+
     [self activate];
 }
 
 #pragma mark NSNotificationCenter event handling
 
 -(void)didRegisterForRemoteNotificationsWithDeviceToken:(NSNotification*)notification {
+    // Expecting notification.object to be an NSData* holding the APNs device token
     NSData *const deviceToken = notification.object;
     self.deviceToken = deviceToken;
 }
 
 -(void)didFailToRegisterForRemoteNotificationsWithError:(NSNotification*)notification {
+    // Expecting notification object to be an NSError* detailing the APNs registration failure
     NSError *const error = notification.object;
     self.deviceIdLabel.text = error.localizedDescription;
 }
@@ -87,7 +98,7 @@
                   completionHandler:^(PTDiffusionSession * session, NSError * error)
      {
          if (!session) {
-             [Common displayAlert:error.localizedDescription withTitle:@"Cannot connect to Diffusion"];
+             [Common displayAlert:error.localizedDescription withTitle:@"Cannot connect to Diffusion" viewControler:self];
              return;
          }
          self.session = session;
@@ -114,7 +125,8 @@
           {
               if (error != nil) {
                   [Common displayAlert:[NSString stringWithFormat:@"topic: %@, error: %@", self.topicPath, error.localizedDescription]
-                             withTitle:@"Cannot subscribe"];
+                             withTitle:@"Cannot subscribe"
+                         viewControler:self];
                   return;
               }
               [session.topics addFallbackTopicStreamWithDelegate:self];
@@ -158,13 +170,15 @@
             : nil;
     }
 
-    if([keyPath isEqualToString:@"deviceToken"] || [keyPath isEqualToString:@"session"]) {
-        const BOOL valid = (self.deviceToken != nil && self.session != nil);
-        self.pnSubViewCell.selectionStyle = valid ? UITableViewCellSelectionStyleDefault : UITableViewCellSelectionStyleNone;
-        self.pnUnsubViewCell.selectionStyle = self.pnSubViewCell.selectionStyle;
-        self.pnSubLabel.enabled = self.pnUnsubLabel.enabled = valid;
+    else {
+        return;
     }
 
+    // Enable/disable the Subscribe and Unsubscribe 'buttons'
+    const BOOL valid = (self.deviceToken != nil && self.session != nil);
+    self.pnSubViewCell.selectionStyle = valid ? UITableViewCellSelectionStyleDefault : UITableViewCellSelectionStyleNone;
+    self.pnUnsubViewCell.selectionStyle = self.pnSubViewCell.selectionStyle;
+    self.pnSubLabel.enabled = self.pnUnsubLabel.enabled = valid;
 }
 
 #pragma mark UITableViewDelegate obligations
@@ -174,7 +188,7 @@
 
     UITableViewCell *const cell = [tableView cellForRowAtIndexPath:indexPath];
     switch(cell.tag) {
-        case TAP_SESSION_ID: {
+        case sessionIdTag: {
             NSURL *const url = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
             [[UIApplication sharedApplication] openURL:url
                                                options:[NSDictionary new]
@@ -182,14 +196,14 @@
             break;
         }
 
-        case TAP_PN_SUBSCRIBE: {
+        case pnSubscribeTag: {
             if (self.session != nil && self.deviceToken != nil) {
                 [self doPnSubscribe:@[self.topicPath, self.silentTopicPath]
                         deviceToken:self.deviceToken];
             }
             break;
         }
-        case TAP_PN_UNSUBSCRIBE: {
+        case pnUnsubscribeTag: {
             if (self.session != nil && self.deviceToken != nil) {
                 [self doPnUnsubscribe:@[self.topicPath, self.silentTopicPath]
                           deviceToken:self.deviceToken];
@@ -214,51 +228,50 @@
  * Compose and send a subscription request to the Push Notification bridge
  * @param paths topic paths within the subscription request
  */
-- (IBAction)doPnSubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
+- (void)doPnSubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
     // Compose the JSON request from Obj-C literals
     NSString *const correlation = [[NSUUID UUID] UUIDString];
     PTDiffusionTopicSelector *const selector = [PTDiffusionTopicSelector topicSelectorWithAnyExpression:paths];
-    NSDictionary *const request = @{@"request": @{
-                                      @"correlation": correlation,
-                                      @"content": @{
-                                              @"pnsub": @{
-                                                      @"destination": [self formatAsURI:deviceToken],
-                                                      @"topic": selector.description}
-                                              }
-                                      }};
-    PTDiffusionContent *const requestContent = [[PTDiffusionContent alloc] initWithData:[NSJSONSerialization
-                                                                                   dataWithJSONObject:request
-                                                                                   options:0
-                                                                                   error:nil]];
+    NSDictionary *const request = 
+        @{@"request": @{
+                  @"correlation": correlation,
+                  @"content": @{
+                          @"pnsub": @{
+                                  @"destination": [self formatAsURI:deviceToken],
+                                  @"topic": selector.description}
+                          }
+                  }};
+    NSData *const requestData = [NSJSONSerialization dataWithJSONObject:request options:0 error:nil];
 
     // Send a message to `SERVICE_TOPIC`
-    [self.session.messaging sendWithTopicPath:SERVICE_TOPIC
-                                        value:requestContent
-                            completionHandler:^(NSError * _Nullable error) {
+    [_session.messaging sendWithTopicPath:SERVICE_TOPIC
+                                    value:[[PTDiffusionContent alloc] initWithData:requestData]
+                        completionHandler:^(NSError * _Nullable error)
+                        {
                                 if(error != nil) {
-                                    [Common displayAlert:error.localizedDescription
-                                               withTitle:@"Send to topic failed"];
-
+                                    NSLog(@"Send to topic %@ failed: %@", SERVICE_TOPIC, error);
                                 }
-                            }];
+                        }];
 }
+
 
 /**
  * Compose and send a unsubscription request to the Push Notification bridge
  * @param paths topic paths within the subscription request
  */
-- (IBAction)doPnUnsubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
+- (void)doPnUnsubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
     // Compose the JSON request from Obj-C literals
     NSString *const correlation = [[NSUUID UUID] UUIDString];
     PTDiffusionTopicSelector *const selector = [PTDiffusionTopicSelector topicSelectorWithAnyExpression:paths];
-    NSDictionary *const request = @{@"request": @{
-                                      @"correlation": correlation,
-                                      @"content": @{
-                                              @"pnunsub": @{
-                                                      @"destination": [self formatAsURI:deviceToken],
-                                                      @"topic": selector.description}
-                                              }
-                                      }};
+    NSDictionary *const request =
+        @{@"request": @{
+                  @"correlation": correlation,
+                  @"content": @{
+                          @"pnunsub": @{
+                                  @"destination": [self formatAsURI:deviceToken],
+                                  @"topic": selector.description}
+                          }
+                  }};
     PTDiffusionContent *const requestContent = [[PTDiffusionContent alloc] initWithData:[NSJSONSerialization
                                                                                    dataWithJSONObject:request
                                                                                    options:0
@@ -267,10 +280,12 @@
     // Send a message to `SERVICE_TOPIC`
     [self.session.messaging sendWithTopicPath:SERVICE_TOPIC
                                         value:requestContent
-                            completionHandler:^(NSError * _Nullable error) {
+                            completionHandler:^(NSError * _Nullable error)
+                            {
                                 if(error != nil) {
                                     [Common displayAlert:error.localizedDescription
-                                               withTitle:@"Send to topic failed"];
+                                               withTitle:@"Send to topic failed"
+                                           viewControler:self] ;
                                 }
                             }];
 }
@@ -279,35 +294,32 @@
 
 -(void)          diffusionStream:(PTDiffusionStream *)stream
     didReceiveMessageOnTopicPath:(NSString *)topicPath
-                         content:(PTDiffusionContent *)content
+                         content:(PTDiffusionContent *)topicContent
                          context:(PTDiffusionReceiveContext *)context {
     if([topicPath isEqualToString:SERVICE_TOPIC]) {
         // parse the JSON, and look for good or bad news,
         NSError *error;
-        NSDictionary *const response=[NSJSONSerialization JSONObjectWithData:content.data options:kNilOptions error:&error];
+        NSDictionary *const response=[NSJSONSerialization JSONObjectWithData:topicContent.data options:kNilOptions error:&error];
         if (response == nil) {
             [Common displayAlert:@"Cannot parse response"
-                     withTitle:error.description];
+                       withTitle:error.description
+                   viewControler:self] ;
         }
 
-        NSObject * const contentObject =[[response valueForKey:@"response"] valueForKey:@"content"];
-        if(contentObject != nil) {
-            // Remove whitespace from the JSON
-            NSString *const jsonStr = contentObject.description;
-            NSString *const alertText = [jsonStr stringByReplacingOccurrencesOfString:@"\\s+"
-                                                                     withString:@""
-                                                                        options:NSRegularExpressionSearch
-                                                                          range:NSMakeRange(0, jsonStr.length)];
-
-            [Common displayAlert:alertText withTitle:@"PNSubscription accepted"];
+        NSDictionary *const content =[[response valueForKey:@"response"] valueForKey:@"content"];
+        if(content != nil) {
+            [Common displayAlert:[content.description flatten]
+                       withTitle:@"PNSubscription accepted"
+                   viewControler:self] ;
         } else {
             NSObject *const errorObject =[[response valueForKey:@"response"] valueForKey:@"error"];
-            [Common displayAlert:[errorObject description] withTitle:@"PNSubscription failed"];
+            [Common displayAlert:[errorObject description]
+                       withTitle:@"PNSubscription failed"
+                   viewControler:self] ;
+
         }
     }
-
 }
-
 
 #pragma mark PTDiffusionTopicStreamDelegate obligations
 
@@ -329,7 +341,6 @@
         self.silentTopicValueLabel.text = string;
         self.silentTopicValueLabel.enabled = YES;
     }
-    
 }
 
 

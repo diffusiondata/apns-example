@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AC7BE2F61DDD01B70026CB7F /* Common.m in Sources */ = {isa = PBXBuildFile; fileRef = AC7BE2F51DDD01B70026CB7F /* Common.m */; };
+		AC8CC1091DE4819E00E77D9D /* NSString+Flatten.m in Sources */ = {isa = PBXBuildFile; fileRef = AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */; };
 		ACC070151DD0C3920061AC97 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC070141DD0C3920061AC97 /* main.m */; };
 		ACC070181DD0C3920061AC97 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC070171DD0C3920061AC97 /* AppDelegate.m */; };
 		ACC0701B1DD0C3920061AC97 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC0701A1DD0C3920061AC97 /* ViewController.m */; };
@@ -38,6 +39,8 @@
 /* Begin PBXFileReference section */
 		AC7BE2F51DDD01B70026CB7F /* Common.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Common.m; sourceTree = "<group>"; };
 		AC7BE2F71DDD01CB0026CB7F /* Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
+		AC8CC1071DE4819E00E77D9D /* NSString+Flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Flatten.h"; sourceTree = "<group>"; };
+		AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Flatten.m"; sourceTree = "<group>"; };
 		ACC070101DD0C3920061AC97 /* APNSExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APNSExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACC070141DD0C3920061AC97 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		ACC070161DD0C3920061AC97 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -59,9 +62,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ACC0702C1DD0DE7B0061AC97 /* UserNotifications.framework in Frameworks */,
 				ACC070301DD200FC0061AC97 /* Diffusion.framework in Frameworks */,
 				ACC070311DD21B240061AC97 /* Diffusion.framework in Frameworks */,
-				ACC0702C1DD0DE7B0061AC97 /* UserNotifications.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,6 +104,8 @@
 				ACC0701C1DD0C3920061AC97 /* Main.storyboard */,
 				ACC070191DD0C3920061AC97 /* ViewController.h */,
 				ACC0701A1DD0C3920061AC97 /* ViewController.m */,
+				AC8CC1071DE4819E00E77D9D /* NSString+Flatten.h */,
+				AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */,
 			);
 			path = APNSExample;
 			sourceTree = "<group>";
@@ -202,6 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AC7BE2F61DDD01B70026CB7F /* Common.m in Sources */,
+				AC8CC1091DE4819E00E77D9D /* NSString+Flatten.m in Sources */,
 				ACC0701B1DD0C3920061AC97 /* ViewController.m in Sources */,
 				ACC070181DD0C3920061AC97 /* AppDelegate.m in Sources */,
 				ACC070151DD0C3920061AC97 /* main.m in Sources */,

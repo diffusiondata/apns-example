@@ -1,5 +1,5 @@
 //
-//  Common.h
+//  NSString+Flatten.h
 //
 //  Copyright (C) 2016 Push Technology Ltd.
 //
@@ -14,18 +14,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-
 @import Foundation;
 
-extern NSString *const didRegisterForRemoteNotificationsWithDeviceToken;
-extern NSString *const didFailToRegisterForRemoteNotificationsWithError;
-extern NSString *const applicationWillEnterForeground;
-extern NSString *const applicationDidEnterBackground;
+@interface NSString(flatten)
 
-@interface Common : NSObject
-
-+(void)displayAlert:(NSString*)message withTitle:(NSString*)title viewControler:(UIViewController*)viewControler;
-
+/**
+ * Create a copy of this string that lacks any whitespace.
+ */
+-(NSString*)flatten;
 @end
-
-

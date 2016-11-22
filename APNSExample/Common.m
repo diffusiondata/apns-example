@@ -6,21 +6,28 @@
 //  Copyright © 2016 EXAMPLE. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+@import Foundation;
+@import UIKit;
 #import "Common.h"
+
+NSString *const didRegisterForRemoteNotificationsWithDeviceToken = @"didRegisterForRemoteNotificationsWithDeviceToken";
+NSString *const didFailToRegisterForRemoteNotificationsWithError = @"didFailToRegisterForRemoteNotificationsWithError";
+NSString *const applicationWillEnterForeground = @"applicationWillEnterForeground";
+NSString *const applicationDidEnterBackground = @"applicationDidEnterBackground";
 
 @implementation Common
 
-+(void)displayAlert:(NSString*)message withTitle:(NSString*)title {
-#   pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    UIAlertView *const alert = [[UIAlertView alloc] initWithTitle:title
-                                                          message:message
-                                                         delegate:nil
-                                                cancelButtonTitle:@"Ok"
-                                                otherButtonTitles:nil];
-    [alert show];
-#   pragma clang diagnostic pop
++(void)displayAlert:(NSString*)message withTitle:(NSString*)title viewControler:(UIViewController*)viewControler{
+    UIAlertController *const alert = [UIAlertController alertControllerWithTitle:title
+                                                                         message:message
+                                                                  preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction * action) {}];
+    [alert addAction:defaultAction];
+
+    [viewControler presentViewController:alert animated:YES completion:nil];
 }
 
 @end
+

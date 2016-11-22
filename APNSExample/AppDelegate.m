@@ -1,15 +1,24 @@
 //
 //  AppDelegate.m
-//  APNSExample
 //
-//  Created by Martin Cowie on 07/11/2016.
-//  Copyright © 2016 EXAMPLE. All rights reserved.
+//  Copyright (C) 2016 Push Technology Ltd.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
 
 #import "AppDelegate.h"
 #import "Common.h"
 
 @import Diffusion;
+@import UserNotifications;
 
 @interface SilentFetcher : NSObject<PTDiffusionFetchStreamDelegate>
 
@@ -19,77 +28,75 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler;
 
 -(void)fetch;
 
-@property NSURL *url;
-@property NSString *topicPath;
-@property PTDiffusionSession *session;
-@property void (^completionHandler)(UIBackgroundFetchResult);
+@property (nonatomic) NSURL *url;
+@property (nonatomic) NSString *topicPath;
+@property (nonatomic) PTDiffusionSession *session;
+@property (nonatomic) void (^completionHandler)(UIBackgroundFetchResult);
 
 @end
 
-@interface AppDelegate ()
-@property SilentFetcher *silentFetcher;
-@end
-
-@implementation AppDelegate
-
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@implementation AppDelegate {
+    SilentFetcher *_silentFetcher;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    const UIUserNotificationType types = (UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert);
-    UIUserNotificationSettings *const mySettings = [UIUserNotificationSettings settingsForTypes:types categories:nil];
-
-    [application registerUserNotificationSettings:mySettings];
     [self registerDefaultsFromSettingsBundle];
-
+    [application registerForRemoteNotifications];
     return YES;
 }
 
--(void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
-    if (notificationSettings.types & UIUserNotificationTypeAlert) {
-        [application registerForRemoteNotifications];
-    } else {
-        //TODO: make sure this is in the right place
-        [Common displayAlert:@"Notifications" withTitle:@"Will not receive notifications"];
-    }
-}
-
 -(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    NSLog(@"didRegisterForRemoteNotificationsWithDeviceToken:%@", deviceToken);
-
-    NSNotification *const notification = [NSNotification notificationWithName:@"didRegisterForRemoteNotificationsWithDeviceToken" object:deviceToken];
+    NSNotification *const notification = [NSNotification notificationWithName:didRegisterForRemoteNotificationsWithDeviceToken
+                                                                       object:deviceToken];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
+
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+    [center requestAuthorizationWithOptions:(UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert)
+                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                              if (granted) {
+                              }
+                          }];
 }
 
 -(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error {
-    NSNotification *const notification = [NSNotification notificationWithName:@"didFailToRegisterForRemoteNotificationsWithError" object:error];
+    NSNotification *const notification = [NSNotification notificationWithName:didFailToRegisterForRemoteNotificationsWithError
+                                                                       object:error];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
-
-#pragma clang diagnostic pop
 
 -(void)          application:(UIApplication *)application
 didReceiveRemoteNotification:(NSDictionary *)userInfo
       fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     if([userInfo[@"aps"][@"content-available"] isEqual:@1] && (application.applicationState == UIApplicationStateBackground)) {
+        /*
+         * Fetch the value of `SILENT_TOPIC` from Diffusion in the background. The remote notification
+         * acts as a signal stimulating the app to get the topic value.
+
+         * This may be desirable when transmitting sensitive data, or in circumstances where local data
+         * protection legislation mandates data not leave a geography.
+         */
+
         NSUserDefaults *const defaults = [NSUserDefaults standardUserDefaults];
         NSString *const silentTopicPath = [defaults stringForKey:@"SILENT_TOPIC"];
         NSString *const url = [defaults stringForKey:@"URL"];
 
-        self.silentFetcher = [[SilentFetcher alloc] initWithURL:[NSURL URLWithString:url]
-                                                      topicPath:silentTopicPath
-                                           andCompletionhandler:completionHandler];
-        [self.silentFetcher fetch];
+        _silentFetcher = [[SilentFetcher alloc] initWithURL:[NSURL URLWithString:url]
+                                                  topicPath:silentTopicPath
+                                       andCompletionhandler:completionHandler];
+        [_silentFetcher fetch];
     }
 }
 
 -(void)applicationDidEnterBackground:(UIApplication *)application {
-    NSNotification *const notif = [NSNotification notificationWithName:@"applicationDidEnterBackground" object:application];
+    NSNotification *const notif = [NSNotification notificationWithName:applicationDidEnterBackground
+                                                                object:application];
     [[NSNotificationCenter defaultCenter] postNotification:notif];
 }
 
 -(void)applicationWillEnterForeground:(UIApplication *)application {
-    NSNotification *const notif = [NSNotification notificationWithName:@"applicationWillEnterForeground" object:application];
+    NSNotification *const notif = [NSNotification notificationWithName:applicationWillEnterForeground
+                                                                object:application];
     [[NSNotificationCenter defaultCenter] postNotification:notif];
 }
 
@@ -97,14 +104,16 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
 /**
  * Read the default values from the settings bundle, and register as defaults.
  *
- * Consequent uses of `[[NSUserDefaults standardUserDefaults] objectForKey:@"someKey"]` will return
+ * Subsequent uses of `[[NSUserDefaults standardUserDefaults] objectForKey:@"someKey"]` will return
  * the default value, if no explicit value is defined.
  */
 - (void)registerDefaultsFromSettingsBundle {
 
-    NSString* const settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings" ofType:@"bundle"];
+    NSString* const settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings"
+                                                                     ofType:@"bundle"];
     if(!settingsBundle) {
-        [NSException raise:@"Cannot load setting defaults" format:@"Cannot load settings defaults: %@", settingsBundle];
+        [NSException raise:@"Cannot load setting defaults"
+                    format:@"Cannot load settings defaults: %@", settingsBundle];
     }
 
     NSDictionary *const settings = [NSDictionary dictionaryWithContentsOfFile:[settingsBundle stringByAppendingPathComponent:@"Root.plist"]];
@@ -159,16 +168,20 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
 -(void)diffusionStream:(PTDiffusionStream *)stream
      didFetchTopicPath:(NSString *)topicPath
-               content:(PTDiffusionContent *)content {
+               content:(PTDiffusionContent *)topicContent {
 
     [self.session close];
 
-    NSString *const contentStr = [[NSString alloc] initWithData:content.data encoding:NSUTF8StringEncoding];
-    UILocalNotification* localNotification = [[UILocalNotification alloc] init];
-    localNotification.alertTitle = topicPath;
-    localNotification.alertBody = contentStr;
-    localNotification.soundName = UILocalNotificationDefaultSoundName;
-    [[UIApplication sharedApplication] presentLocalNotificationNow:localNotification];
+    UNMutableNotificationContent *const content = [UNMutableNotificationContent new];
+    content.title = topicPath;
+    content.body = [[NSString alloc] initWithData:topicContent.data encoding:NSUTF8StringEncoding];
+    content.sound = [UNNotificationSound defaultSound];
+
+    UNNotificationRequest *const notification = [UNNotificationRequest requestWithIdentifier:@"fetch-result"
+                                                                                     content:content
+                                                                                     trigger:nil];
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+    [center addNotificationRequest:notification withCompletionHandler:nil];
 
     self.completionHandler(UIBackgroundFetchResultNewData);
 }
