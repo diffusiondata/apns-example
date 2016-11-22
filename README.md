@@ -13,8 +13,8 @@ A working example of an iOS app that both requests and receives push-notificatio
 
 ## To execute
 
-* Diffusion server v5.9.1 or greater
-* A suitably configured Push Notification Bridge
+* [Diffusion server](http://download.pushtechnology.com/) v5.9.1 or greater
+* A suitably configured [Push Notification Bridge](http://download.pushtechnology.com/docs/latest/manual/html/administratorguide/pushnotifications/pn_bridge.html)
 
 # Execution
 
