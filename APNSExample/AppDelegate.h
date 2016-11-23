@@ -16,8 +16,6 @@
 
 #import <UIKit/UIKit.h>
 
-@class SilentFetcher;
-
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;

@@ -112,7 +112,7 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
     NSString* const settingsBundle = [[NSBundle mainBundle] pathForResource:@"Settings"
                                                                      ofType:@"bundle"];
     if(!settingsBundle) {
-        [NSException raise:@"Cannot load setting defaults"
+        [NSException raise:NSInternalInconsistencyException
                     format:@"Cannot load settings defaults: %@", settingsBundle];
     }
 
@@ -191,7 +191,14 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     NSLog(@"Failed to fetch value of %@/%@: %@", self.url, self.topicPath, error);
     [self.session close];
-    self.completionHandler(UIBackgroundFetchResultFailed);
+
+    void const (^completionHandler)(UIBackgroundFetchResult) = self.completionHandler;
+    self.completionHandler = nil;
+    if (completionHandler == nil) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"completionHandler is nil"];
+    }
+    completionHandler(UIBackgroundFetchResultFailed);
 }
 
 @end

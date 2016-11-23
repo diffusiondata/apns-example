@@ -13,6 +13,7 @@ A working example of an iOS app that both requests and receives push-notificatio
 
 ## To run
 
+* An iOS device running iOS 10.0 or greater
 * [Download `Diffusion.framework`](https://developer.reappt.io/clients/apple/) and place in the `Frameworks` folder.
 * [Diffusion server](http://download.pushtechnology.com/) v5.9.1 or greater
 * A suitably configured [Push Notification Bridge](http://download.pushtechnology.com/docs/latest/manual/html/administratorguide/pushnotifications/pn_bridge.html)
