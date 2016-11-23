@@ -1,0 +1,44 @@
+<pn-config xmlns="http://www.pushtechnology.com/diffusion/adapter/pnadapter">
+    <!--
+        This is an example configuration for the Push Notification bridge, 
+        It listens for requests on topic-path "push/notifications".
+
+        Elements <server> and <apns> must be changed to reflect your environment.
+     -->
+    <server url="ws://your.push.server:8080" principal="control" credentials="password" topicPath="push/notifications"/>
+    <apns certificate="com.pushtechnology.example.APNSExample.p12" passphrase="secr3t" servers="sandbox"/>
+    
+    <transformation default="example-transform">
+        <templates>
+
+            <template name="example-transform">
+{  
+  "apns":{  
+    "aps":{  
+      "badge": ${topic.update},
+	  "sound": "default"
+    },
+    "topicPath":"${topic.path}",
+  }
+}
+            </template>
+            <template name="example-silent-transform">
+{  
+  "apns":{  
+    "aps":{  
+      "content-available": 1
+    },
+    "topicPath":"${topic.path}",
+  }
+}
+            </template>
+        </templates>
+        <map>
+            <from selector=">example/topic" toTemplate="example-transform"/>
+            <from selector=">example/silent/topic" toTemplate="example-silent-transform"/>
+        </map>
+    </transformation>
+    
+    <delivery threads="2"/>
+</pn-config>
+
