@@ -10,4 +10,4 @@ After cloning this repo, run `npm install` to download required dependencies.
 
 # Execution
 
-`node upsert.js  wss://principal:password@my.reappt.host:port-number/some/topic/path value`
+`node settopic.js -u principal -c password -p 8080 my.reappt.host some/topic/path 12345`
