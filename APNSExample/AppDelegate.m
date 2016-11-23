@@ -28,11 +28,6 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler;
 
 -(void)fetch;
 
-@property (nonatomic) NSURL *url;
-@property (nonatomic) NSString *topicPath;
-@property (nonatomic) PTDiffusionSession *session;
-@property (nonatomic) void (^completionHandler)(UIBackgroundFetchResult);
-
 @end
 
 @implementation AppDelegate {
@@ -133,15 +128,20 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
 
 @end
 
-@implementation SilentFetcher
+@implementation SilentFetcher {
+    NSURL *_url;
+    NSString *_topicPath;
+    PTDiffusionSession *_session;
+    void (^_completionHandler)(UIBackgroundFetchResult);
+}
 
 -(id)    initWithURL:(NSURL*)url
            topicPath:(NSString*)topicPath
 andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     if (self = [super init]) {
-        self.url = url;
-        self.topicPath = topicPath;
-        self.completionHandler = completionHandler;
+        _url = url;
+        _topicPath = topicPath;
+        _completionHandler = completionHandler;
         return self;
     }
     return nil;
@@ -152,16 +152,16 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     PTDiffusionMutableSessionConfiguration *const sessionConfiguration = [PTDiffusionMutableSessionConfiguration new];
     sessionConfiguration.reconnectionTimeout = @0;
 
-    [PTDiffusionSession openWithURL:self.url
+    [PTDiffusionSession openWithURL:_url
                       configuration:sessionConfiguration
                   completionHandler:^(PTDiffusionSession * session, NSError * error)
      {
-         self.session = session;
+         _session = session;
          if (!session) {
-             NSLog(@"Session connection to %@ failed: %@", self.url, error);
+             NSLog(@"Session connection to %@ failed: %@", _url, error);
              return;
          }
-         [session.topics fetchWithTopicSelectorExpression:self.topicPath
+         [session.topics fetchWithTopicSelectorExpression:_topicPath
                                                  delegate:self];
      }];
 }
@@ -170,7 +170,7 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
      didFetchTopicPath:(NSString *)topicPath
                content:(PTDiffusionContent *)topicContent {
 
-    [self.session close];
+    [_session close];
 
     UNMutableNotificationContent *const content = [UNMutableNotificationContent new];
     content.title = topicPath;
@@ -183,20 +183,23 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
     [center addNotificationRequest:notification withCompletionHandler:nil];
 
-    self.completionHandler(UIBackgroundFetchResultNewData);
+    [self complete:UIBackgroundFetchResultNewData];
 }
 
 -(void)diffusionStream:(PTDiffusionStream *)stream
       didFailWithError:(NSError *)error {
 
-    NSLog(@"Failed to fetch value of %@/%@: %@", self.url, self.topicPath, error);
-    [self.session close];
+    NSLog(@"Failed to fetch value of %@/%@: %@", _url, _topicPath, error);
+    [_session close];
+    [self complete:UIBackgroundFetchResultFailed];
+}
 
-    void const (^completionHandler)(UIBackgroundFetchResult) = self.completionHandler;
-    self.completionHandler = nil;
+-(void)complete:(UIBackgroundFetchResult)completionValue {
+    void const (^completionHandler)(UIBackgroundFetchResult) = _completionHandler;
+    _completionHandler = nil;
     if (completionHandler == nil) {
         [NSException raise:NSInternalInconsistencyException
-                    format:@"completionHandler is nil"];
+                    format:@"self.compl"];
     }
     completionHandler(UIBackgroundFetchResultFailed);
 }
