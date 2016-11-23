@@ -2,35 +2,7 @@
 /*jshint esversion: 6 */
 
 const diffusion = require('diffusion');
-const urlParser = require('url');
 const commander = require('commander');
-
-function buildSessionOptionsFromURL(urlStr) {
-	// Process the URL
-	const url = urlParser.parse(urlStr);
-
-	if (null === url.host || url.pathname === null)  {
-		return null;
-	}
-
-	var result = {
-		reconnect: false,
-		host : url.hostname,
-		rootTopic : url.pathname.substring(1)
-	};
-
-	if (null !== url.port) {
-		result.port = url.port;
-	}
-
-	if (null !== url.auth) {
-		const urlCredentials = url.auth.split(":");
-		result.principal = urlCredentials[0];
-		result.credentials = urlCredentials[1];
-	}
-
-	return result;
-}
 
 function buildConfigFromArgs(argv) {
 	var result = {
@@ -50,7 +22,7 @@ function buildConfigFromArgs(argv) {
 			result.rootTopic = rootTopic;
 			result.topicValue = topicValue;
 		}).parse(argv);
-	if(typeof result.sessionOptions.host === 'undefined' || typeof result.rootTopic === 'undefined' || typeof result.topicValue === 'undefined') {
+	if(result.sessionOptions.host === undefined || result.rootTopic === undefined || result.topicValue === undefined) {
 		commander.outputHelp();
 		process.exit(1);
 	}
