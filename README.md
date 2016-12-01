@@ -1,4 +1,4 @@
-# APNSExample
+# APNS Example
 
 A working example of an iOS app that both requests and receives push-notifications. Works in concert with `node_client/settopic.js`
 
