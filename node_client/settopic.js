@@ -16,7 +16,7 @@ function buildConfigFromArgs(argv) {
 	};
 
 	commander
-		.version('0.0.2')
+		.version('6.0.1')
 		.option('-p, --port <portnumber>', 'Server port', parseInt)
 		.option('-u, --principal <username>', 'User principal')
 		.option('-c, --credentials <password>', 'User credentials/password')
