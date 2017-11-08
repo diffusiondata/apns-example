@@ -313,13 +313,11 @@ static const char pnUnsubscribeTag = 21;
         self.silentTopicValueLabel.text = string;
         self.silentTopicValueLabel.enabled = YES;
     }
-
 }
 
 -(void)     diffusionStream:(PTDiffusionStream *)stream
     didSubscribeToTopicPath:(NSString *)topicPath
               specification:(PTDiffusionTopicSpecification *)specification {
-
     NSLog(@"Subscribed to %@", topicPath);
 }
 
@@ -328,12 +326,10 @@ static const char pnUnsubscribeTag = 21;
                   specification:(PTDiffusionTopicSpecification *)specification
                          reason:(PTDiffusionTopicUnsubscriptionReason)reason {
     NSLog(@"Ubsubscribed from %@", topicPath);
-
 }
 
 -(void)diffusionStream:(PTDiffusionStream *)stream
       didFailWithError:(NSError *)error {
-
     NSLog(@"Stream failed: %@", error);
 }
 

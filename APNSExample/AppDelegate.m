@@ -180,7 +180,6 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     // Convert the raw bytes into a JSON
     PTDiffusionJSON *const json = [[PTDiffusionJSON alloc] initWithData:topicContent.data];
-    NSLog(@"Got \"%@\" from %@", json, topicPath);
 
     // Convert the JSON into a native object
     NSError *error;
