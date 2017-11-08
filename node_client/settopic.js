@@ -4,6 +4,10 @@
 const diffusion = require('diffusion');
 const commander = require('commander');
 
+const TopicSpecification = diffusion.topics.TopicSpecification;
+const TopicType = diffusion.topics.TopicType;
+const jsonDataType = diffusion.datatypes.json();
+
 function buildConfigFromArgs(argv) {
 	var result = {
 		sessionOptions: {
@@ -12,17 +16,17 @@ function buildConfigFromArgs(argv) {
 	};
 
 	commander
-		.version('0.0.1')
+		.version('0.0.2')
 		.option('-p, --port <portnumber>', 'Server port', parseInt)
 		.option('-u, --principal <username>', 'User principal')
 		.option('-c, --credentials <password>', 'User credentials/password')
-		.arguments('<host> <topicpath> <topicvalue>')
+		.arguments('<host> <topicpath> <numeric-topic-value>')
 		.action(function(host, rootTopic, topicValue) {
 			result.sessionOptions.host = host;
 			result.rootTopic = rootTopic;
-			result.topicValue = topicValue;
+			result.topicValue = parseInt(topicValue);
 		}).parse(argv);
-	if(result.sessionOptions.host === undefined || result.rootTopic === undefined || result.topicValue === undefined) {
+	if(result.sessionOptions.host === undefined || result.rootTopic === undefined || result.topicValue === undefined || !Number.isInteger(result.topicValue)) {
 		commander.outputHelp();
 		process.exit(1);
 	}
@@ -38,26 +42,19 @@ const config = buildConfigFromArgs(process.argv);
 diffusion.connect(config.sessionOptions).then(function(session){
 	console.log("Connected to", config.sessionOptions.host);
 
-	session.topics.add(config.rootTopic, config.topicValue).then(function(result){
-		if (result.added) {
-			console.log("Created", config.rootTopic, "with value", config.topicValue);
-		} else {
-			console.log("Updated", config.rootTopic, "with value", config.topicValue);
-		}
-		process.exit(0);
-	}, function(addFailureSeason){
-		if(addFailureSeason.id == 2 /*diffusion.topics.EXISTS_MISMATCH*/) {
-			session.topics.update(config.rootTopic, config.topicValue).then(function(){
-				console.log("Updated", config.rootTopic, "to", config.topicValue);
-				process.exit(0);
-			}, function(reason){
-				console.error("Cannot update", config.rootTopic, reason);
+	session.topics.add(config.rootTopic, TopicType.JSON).then(function(result){
+		session.topics.update(config.rootTopic, jsonDataType.fromJsonString(config.topicValue)).then(
+			function(topic) {
+				console.log("Updated topic " + topic + " to " + config.topicValue);
+				process.exit(0); 
+			}, function(updateFailureReason) {
+				console.log("Cannot set topic " + updateFailureReason);
 				process.exit(1);
-			});
-		} else {
-			console.error("Cannot add topic", config.rootTopic, addFailureSeason);
-			process.exit(1);
-		}
+			}
+		);
+	}, function(addFailureSeason){
+		console.error("Cannot add topic", config.rootTopic, addFailureSeason);
+		process.exit(1);
 	});
 }, function(reason) {
     console.warn("Cannot connect to", config.sessionOptions.host, reason.message);

@@ -16,7 +16,6 @@
 
 #import "ViewController.h"
 #import "Common.h"
-#import "NSString+Flatten.h"
 
 #define SERVICE_TOPIC @"push/notifications"
 
@@ -124,12 +123,14 @@ static const char pnUnsubscribeTag = 21;
                                             completionHandler:^(NSError * error)
           {
               if (error != nil) {
-                  [Common displayAlert:[NSString stringWithFormat:@"topic: %@, error: %@", self.topicPath, error.localizedDescription]
+                  [Common displayAlert:[NSString stringWithFormat:@"topic: %@, error: %@", selector.description, error.localizedDescription]
                              withTitle:@"Cannot subscribe"
                          viewControler:self];
                   return;
               }
-              [session.topics addFallbackTopicStreamWithDelegate:self];
+
+              PTDiffusionValueStream *const valueStream = [PTDiffusionJSON valueStreamWithDelegate:self];
+              [session.topics addFallbackStream:valueStream];
           }];
      }];
 }
@@ -154,13 +155,6 @@ static const char pnUnsubscribeTag = 21;
         self.sessionIdLabel.text = (self.session != nil)
             ? [self.session.sessionId description]
             : nil;
-
-        if(self.session) {
-            // Wire up a handler for the responses from SERVICE_TOPIC
-            PTDiffusionTopicSelector *const topicSelector = [PTDiffusionTopicSelector topicSelectorWithExpression:SERVICE_TOPIC];
-            [self.session.messaging addMessageStreamWithSelector:topicSelector
-                                                        delegate:self];
-        }
     }
 
     else if([keyPath isEqualToString:@"deviceToken"]) {
@@ -229,29 +223,31 @@ static const char pnUnsubscribeTag = 21;
  * @param paths topic paths within the subscription request
  */
 - (void)doPnSubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
-    // Compose the JSON request from Obj-C literals
-    NSString *const correlation = [[NSUUID UUID] UUIDString];
-    PTDiffusionTopicSelector *const selector = [PTDiffusionTopicSelector topicSelectorWithAnyExpression:paths];
-    NSDictionary *const request = 
-        @{@"request": @{
-                  @"correlation": correlation,
-                  @"content": @{
-                          @"pnsub": @{
-                                  @"destination": [self formatAsURI:deviceToken],
-                                  @"topic": selector.description}
-                          }
-                  }};
-    NSData *const requestData = [NSJSONSerialization dataWithJSONObject:request options:0 error:nil];
 
-    // Send a message to `SERVICE_TOPIC`
-    [_session.messaging sendWithTopicPath:SERVICE_TOPIC
-                                    value:[[PTDiffusionContent alloc] initWithData:requestData]
-                        completionHandler:^(NSError * _Nullable error)
-                        {
-                                if(error != nil) {
-                                    NSLog(@"Send to topic %@ failed: %@", SERVICE_TOPIC, error);
-                                }
-                        }];
+    // Compose the JSON request from Obj-C literals
+    PTDiffusionTopicSelector *const selector = [PTDiffusionTopicSelector topicSelectorWithAnyExpression:paths];
+    NSDictionary *const requestDict = @{
+        @"pnsub": @{
+              @"destination": [self formatAsURI:deviceToken],
+              @"topic": selector.description
+        }};
+    PTDiffusionJSON * const json = [[PTDiffusionJSON alloc] initWithObject:requestDict error:nil];
+
+    // Send the request and handle the response
+    [_session.messaging sendRequest:json.request
+                             toPath:SERVICE_TOPIC
+              JSONCompletionHandler:^(PTDiffusionJSON * _Nullable json, NSError * _Nullable error) {
+                  if (error != nil) {
+                      // Display the failure
+                      [Common displayAlert:[NSString stringWithFormat:@"Failure sending request to %@: %@", SERVICE_TOPIC, error.userInfo]
+                                 withTitle:@"PNSubscription failed"
+                             viewControler:self] ;
+                  } else {
+                      // Display the response
+                      [Common displayAlert:nil
+                                 withTitle:@"PNSubscription accepted"
+                             viewControler:self] ;
+                  }}];
 }
 
 
@@ -261,74 +257,50 @@ static const char pnUnsubscribeTag = 21;
  */
 - (void)doPnUnsubscribe:(NSArray<NSString*> *)paths deviceToken:(NSData*)deviceToken {
     // Compose the JSON request from Obj-C literals
-    NSString *const correlation = [[NSUUID UUID] UUIDString];
     PTDiffusionTopicSelector *const selector = [PTDiffusionTopicSelector topicSelectorWithAnyExpression:paths];
-    NSDictionary *const request =
-        @{@"request": @{
-                  @"correlation": correlation,
-                  @"content": @{
-                          @"pnunsub": @{
-                                  @"destination": [self formatAsURI:deviceToken],
-                                  @"topic": selector.description}
-                          }
-                  }};
-    PTDiffusionContent *const requestContent = [[PTDiffusionContent alloc] initWithData:[NSJSONSerialization
-                                                                                   dataWithJSONObject:request
-                                                                                   options:0
-                                                                                   error:nil]];
+    NSDictionary *const requestDict = @{
+          @"pnunsub": @{
+              @"destination": [self formatAsURI:deviceToken],
+              @"topic": selector.description}
+          };
 
-    // Send a message to `SERVICE_TOPIC`
-    [self.session.messaging sendWithTopicPath:SERVICE_TOPIC
-                                        value:requestContent
-                            completionHandler:^(NSError * _Nullable error)
-                            {
-                                if(error != nil) {
-                                    [Common displayAlert:error.localizedDescription
-                                               withTitle:@"Send to topic failed"
-                                           viewControler:self] ;
-                                }
-                            }];
+    PTDiffusionJSON *const json = [[PTDiffusionJSON alloc] initWithObject:requestDict error:nil];
+
+    // Send the request and handle the response
+    [_session.messaging sendRequest:json.request
+                             toPath:SERVICE_TOPIC
+              JSONCompletionHandler:^(PTDiffusionJSON * _Nullable json, NSError * _Nullable error) {
+                  if (error != nil) {
+                      // Display the failure
+                      [Common displayAlert:[NSString stringWithFormat:@"Failure sending request to %@: %@", SERVICE_TOPIC, error.userInfo]
+                                 withTitle:@"PNUnsubscription failed"
+                             viewControler:self] ;
+                  } else {
+                      // Display the response
+                      [Common displayAlert:nil
+                                 withTitle:@"PNUnsubscription accepted"
+                             viewControler:self] ;
+                  }}];
 }
 
-#pragma mark PTDiffusionMessageStreamDelegate obligations
+#pragma mark PTDiffusionJSONValueStreamDelegate obligations
 
--(void)          diffusionStream:(PTDiffusionStream *)stream
-    didReceiveMessageOnTopicPath:(NSString *)topicPath
-                         content:(PTDiffusionContent *)topicContent
-                         context:(PTDiffusionReceiveContext *)context {
-    if([topicPath isEqualToString:SERVICE_TOPIC]) {
-        // parse the JSON, and look for good or bad news,
-        NSError *error;
-        NSDictionary *const response=[NSJSONSerialization JSONObjectWithData:topicContent.data options:kNilOptions error:&error];
-        if (response == nil) {
-            [Common displayAlert:@"Cannot parse response"
-                       withTitle:error.description
-                   viewControler:self] ;
-        }
-
-        NSDictionary *const content =[[response valueForKey:@"response"] valueForKey:@"content"];
-        if(content != nil) {
-            [Common displayAlert:[content.description flatten]
-                       withTitle:@"PNSubscription accepted"
-                   viewControler:self] ;
-        } else {
-            NSObject *const errorObject =[[response valueForKey:@"response"] valueForKey:@"error"];
-            [Common displayAlert:[errorObject description]
-                       withTitle:@"PNSubscription failed"
-                   viewControler:self] ;
-
-        }
-    }
-}
-
-#pragma mark PTDiffusionTopicStreamDelegate obligations
-
--(void)diffusionStream:(PTDiffusionStream *)stream
+-(void)diffusionStream:(PTDiffusionValueStream *)stream
     didUpdateTopicPath:(NSString *)topicPath
-               content:(PTDiffusionContent *)content
-               context:(PTDiffusionUpdateContext *)context {
+         specification:(PTDiffusionTopicSpecification *)specification
+               oldJSON:(nullable PTDiffusionJSON *)oldJson
+               newJSON:(PTDiffusionJSON *)newJson {
 
-    NSString *const string = [[NSString alloc] initWithData:content.data encoding:NSUTF8StringEncoding];
+    NSError *error;
+    const id update = [newJson objectWithError:&error];
+    if (!update) {
+        NSLog(@"Cannot parse topic content as object: %@", error);
+        return;
+    }
+
+    NSLog(@"topic-path: %@, update: %@", topicPath, update);
+    NSString *const string = [update description];
+
     if([topicPath isEqualToString:self.topicPath]) {
         self.topicValueLabel.text = string;
         self.topicValueLabel.enabled = YES;
@@ -341,7 +313,32 @@ static const char pnUnsubscribeTag = 21;
         self.silentTopicValueLabel.text = string;
         self.silentTopicValueLabel.enabled = YES;
     }
+
 }
 
+-(void)     diffusionStream:(PTDiffusionStream *)stream
+    didSubscribeToTopicPath:(NSString *)topicPath
+              specification:(PTDiffusionTopicSpecification *)specification {
+
+    NSLog(@"Subscribed to %@", topicPath);
+}
+
+-(void)         diffusionStream:(PTDiffusionStream *)stream
+    didUnsubscribeFromTopicPath:(NSString *)topicPath
+                  specification:(PTDiffusionTopicSpecification *)specification
+                         reason:(PTDiffusionTopicUnsubscriptionReason)reason {
+    NSLog(@"Ubsubscribed from %@", topicPath);
+
+}
+
+-(void)diffusionStream:(PTDiffusionStream *)stream
+      didFailWithError:(NSError *)error {
+
+    NSLog(@"Stream failed: %@", error);
+}
+
+- (void)diffusionDidCloseStream:(nonnull PTDiffusionStream *)stream { 
+    NSLog(@"Stream closed: %@", stream);
+}
 
 @end

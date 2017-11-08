@@ -18,7 +18,7 @@
 #import <UIKit/UIKit.h>
 @import Diffusion;
 
-@interface ViewController : UITableViewController<PTDiffusionTopicStreamDelegate, PTDiffusionMessageStreamDelegate>
+@interface ViewController : UITableViewController<PTDiffusionJSONValueStreamDelegate>
 
 @property (nonatomic) PTDiffusionSession *session;
 @property (nonatomic) NSData *deviceToken;

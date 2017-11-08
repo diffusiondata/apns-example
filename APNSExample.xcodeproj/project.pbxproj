@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC2DA1391FAB3289009C4FA4 /* Diffusion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC2DA1381FAB3289009C4FA4 /* Diffusion.framework */; };
+		AC2DA13A1FAB3295009C4FA4 /* Diffusion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC2DA1381FAB3289009C4FA4 /* Diffusion.framework */; };
+		AC2DA13B1FAB3295009C4FA4 /* Diffusion.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = AC2DA1381FAB3289009C4FA4 /* Diffusion.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC7BE2F61DDD01B70026CB7F /* Common.m in Sources */ = {isa = PBXBuildFile; fileRef = AC7BE2F51DDD01B70026CB7F /* Common.m */; };
-		AC8CC1091DE4819E00E77D9D /* NSString+Flatten.m in Sources */ = {isa = PBXBuildFile; fileRef = AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */; };
 		ACC070151DD0C3920061AC97 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC070141DD0C3920061AC97 /* main.m */; };
 		ACC070181DD0C3920061AC97 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC070171DD0C3920061AC97 /* AppDelegate.m */; };
 		ACC0701B1DD0C3920061AC97 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = ACC0701A1DD0C3920061AC97 /* ViewController.m */; };
@@ -17,9 +19,6 @@
 		ACC070231DD0C3920061AC97 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACC070211DD0C3920061AC97 /* LaunchScreen.storyboard */; };
 		ACC0702C1DD0DE7B0061AC97 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACC0702B1DD0DE7B0061AC97 /* UserNotifications.framework */; };
 		ACC0702E1DD0E5A60061AC97 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = ACC0702D1DD0E5A60061AC97 /* Settings.bundle */; };
-		ACC070301DD200FC0061AC97 /* Diffusion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACC0702F1DD200FC0061AC97 /* Diffusion.framework */; };
-		ACC070311DD21B240061AC97 /* Diffusion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ACC0702F1DD200FC0061AC97 /* Diffusion.framework */; };
-		ACC070321DD21B240061AC97 /* Diffusion.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ACC0702F1DD200FC0061AC97 /* Diffusion.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,7 +28,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				ACC070321DD21B240061AC97 /* Diffusion.framework in Embed Frameworks */,
+				AC2DA13B1FAB3295009C4FA4 /* Diffusion.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,10 +36,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AC2DA1381FAB3289009C4FA4 /* Diffusion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Diffusion.framework; path = Frameworks/Diffusion.framework; sourceTree = "<group>"; };
 		AC7BE2F51DDD01B70026CB7F /* Common.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Common.m; sourceTree = "<group>"; };
 		AC7BE2F71DDD01CB0026CB7F /* Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
-		AC8CC1071DE4819E00E77D9D /* NSString+Flatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Flatten.h"; sourceTree = "<group>"; };
-		AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Flatten.m"; sourceTree = "<group>"; };
 		ACC070101DD0C3920061AC97 /* APNSExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APNSExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACC070141DD0C3920061AC97 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		ACC070161DD0C3920061AC97 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -53,7 +51,6 @@
 		ACC070241DD0C3920061AC97 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		ACC0702B1DD0DE7B0061AC97 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		ACC0702D1DD0E5A60061AC97 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
-		ACC0702F1DD200FC0061AC97 /* Diffusion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Diffusion.framework; path = "../../../Applications/Diffusion6.0.0_01/clients/apple/diffusion-iphoneos-6.0.0/iOS8/Diffusion.framework"; sourceTree = "<group>"; };
 		ACC070341DD37EED0061AC97 /* APNSExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = APNSExample.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -62,9 +59,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC2DA1391FAB3289009C4FA4 /* Diffusion.framework in Frameworks */,
+				AC2DA13A1FAB3295009C4FA4 /* Diffusion.framework in Frameworks */,
 				ACC0702C1DD0DE7B0061AC97 /* UserNotifications.framework in Frameworks */,
-				ACC070301DD200FC0061AC97 /* Diffusion.framework in Frameworks */,
-				ACC070311DD21B240061AC97 /* Diffusion.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,8 +101,6 @@
 				ACC0701C1DD0C3920061AC97 /* Main.storyboard */,
 				ACC070191DD0C3920061AC97 /* ViewController.h */,
 				ACC0701A1DD0C3920061AC97 /* ViewController.m */,
-				AC8CC1071DE4819E00E77D9D /* NSString+Flatten.h */,
-				AC8CC1081DE4819E00E77D9D /* NSString+Flatten.m */,
 			);
 			path = APNSExample;
 			sourceTree = "<group>";
@@ -121,7 +116,7 @@
 		ACC0702A1DD0DE7B0061AC97 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				ACC0702F1DD200FC0061AC97 /* Diffusion.framework */,
+				AC2DA1381FAB3289009C4FA4 /* Diffusion.framework */,
 				ACC0702B1DD0DE7B0061AC97 /* UserNotifications.framework */,
 			);
 			name = Frameworks;
@@ -207,7 +202,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AC7BE2F61DDD01B70026CB7F /* Common.m in Sources */,
-				AC8CC1091DE4819E00E77D9D /* NSString+Flatten.m in Sources */,
 				ACC0701B1DD0C3920061AC97 /* ViewController.m in Sources */,
 				ACC070181DD0C3920061AC97 /* AppDelegate.m in Sources */,
 				ACC070151DD0C3920061AC97 /* main.m in Sources */,

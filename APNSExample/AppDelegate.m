@@ -20,8 +20,13 @@
 @import Diffusion;
 @import UserNotifications;
 
-@interface SilentFetcher : NSObject<PTDiffusionFetchStreamDelegate>
-
+/*
+ * Fetches a topic content from a nominated server and topic-path.
+ * Passes the result to a completionhandler.
+ *
+ * Used for handling silent push notifications.
+ */
+@interface TopicFetcher : NSObject<PTDiffusionFetchStreamDelegate>
 -(id)    initWithURL:(NSURL*)url
            topicPath:(NSString*)topicPath
 andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler;
@@ -31,7 +36,7 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler;
 @end
 
 @implementation AppDelegate {
-    SilentFetcher *_silentFetcher;
+    TopicFetcher *_fetcher;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -76,10 +81,10 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
         NSString *const silentTopicPath = [defaults stringForKey:@"SILENT_TOPIC"];
         NSString *const url = [defaults stringForKey:@"URL"];
 
-        _silentFetcher = [[SilentFetcher alloc] initWithURL:[NSURL URLWithString:url]
+        _fetcher = [[TopicFetcher alloc] initWithURL:[NSURL URLWithString:url]
                                                   topicPath:silentTopicPath
                                        andCompletionhandler:completionHandler];
-        [_silentFetcher fetch];
+        [_fetcher fetch];
     }
 }
 
@@ -128,7 +133,7 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
 
 @end
 
-@implementation SilentFetcher {
+@implementation TopicFetcher {
     NSURL *_url;
     NSString *_topicPath;
     PTDiffusionSession *_session;
@@ -161,6 +166,7 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
              NSLog(@"Session connection to %@ failed: %@", _url, error);
              return;
          }
+
          [session.topics fetchWithTopicSelectorExpression:_topicPath
                                                  delegate:self];
      }];
@@ -172,9 +178,21 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
 
     [_session close];
 
+    // Convert the raw bytes into a JSON
+    PTDiffusionJSON *const json = [[PTDiffusionJSON alloc] initWithData:topicContent.data];
+    NSLog(@"Got \"%@\" from %@", json, topicPath);
+
+    // Convert the JSON into a native object
+    NSError *error;
+    const id topicValue = [json objectWithError:&error];
+    if (!topicValue) {
+        NSLog(@"Cannot parse topic content as object: %@", error);
+        return;
+    }
+
     UNMutableNotificationContent *const content = [UNMutableNotificationContent new];
     content.title = topicPath;
-    content.body = [[NSString alloc] initWithData:topicContent.data encoding:NSUTF8StringEncoding];
+    content.body = [NSString stringWithFormat:@"Topic %@ = %@", topicPath, topicValue];
     content.sound = [UNNotificationSound defaultSound];
 
     UNNotificationRequest *const notification = [UNNotificationRequest requestWithIdentifier:@"fetch-result"
@@ -192,6 +210,10 @@ andCompletionhandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     NSLog(@"Failed to fetch value of %@/%@: %@", _url, _topicPath, error);
     [_session close];
     [self complete:UIBackgroundFetchResultFailed];
+}
+
+- (void)diffusionDidCloseStream:(nonnull PTDiffusionStream *)stream {
+    /* do nothing */
 }
 
 -(void)complete:(UIBackgroundFetchResult)completionValue {
