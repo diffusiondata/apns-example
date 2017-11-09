@@ -9,18 +9,18 @@ A working example of an iOS app that both requests and receives push-notificatio
 ## To build
 
 * Xcode v8.1 or greater
-* Diffusion Apple API v5.9.1 or greater
+* Diffusion Apple API v6.0.1 or greater
 
 ## To run
 
 * An iOS device running iOS 10.0 or greater
 * [Download `Diffusion.framework`](https://developer.reappt.io/clients/apple/) and place in the `Frameworks` folder.
-* [Diffusion server](http://download.pushtechnology.com/) v5.9.1 or greater
+* [Diffusion server](http://download.pushtechnology.com/) v6.0.1 or greater
 * A suitably configured [Push Notification Bridge](http://download.pushtechnology.com/docs/latest/manual/html/administratorguide/pushnotifications/pn_bridge.html)
 
 # The process
 
-* Establish either a [Diffusion](http://download.pushtechnology.com/) or [Reappt server](https://reappt.io), and arrange an account with `TOPIC_CONTROL` privilege. Out of the box, account `control` is suitable.
+* Establish either a [Diffusion](http://download.pushtechnology.com/) or [Diffusion Cloud](https://management.ad.diffusion.cloud/#!/login), and arrange an account with `TOPIC_CONTROL` privilege. Out of the box, account `control` is suitable.
 
 * Clone this repository
 
@@ -36,7 +36,7 @@ A working example of an iOS app that both requests and receives push-notificatio
 
 * Deploy and start the app upon an iOS device. APNs service is unavailable in the simulators.
 
-* Use the Settings app to configure APNSExample to connect to your Diffusion/Reappt server.
+* Use the Settings app to configure APNSExample to connect to your Diffusion/Diffusion Cloud server.
 
 * Start APNSExample app and tap on 'Subscribe' and confirm it displays "PNSubscription accepted". 
 
