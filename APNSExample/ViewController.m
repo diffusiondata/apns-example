@@ -325,7 +325,7 @@ static const char pnUnsubscribeTag = 21;
     didUnsubscribeFromTopicPath:(NSString *)topicPath
                   specification:(PTDiffusionTopicSpecification *)specification
                          reason:(PTDiffusionTopicUnsubscriptionReason)reason {
-    NSLog(@"Ubsubscribed from %@", topicPath);
+    NSLog(@"Unsubscribed from %@", topicPath);
 }
 
 -(void)diffusionStream:(PTDiffusionStream *)stream
@@ -334,7 +334,7 @@ static const char pnUnsubscribeTag = 21;
 }
 
 - (void)diffusionDidCloseStream:(nonnull PTDiffusionStream *)stream { 
-    NSLog(@"Stream closed: %@", stream);
+    NSLog(@"Stream closed");
 }
 
 @end

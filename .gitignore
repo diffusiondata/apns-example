@@ -59,4 +59,5 @@ fastlane/screenshots
 
 iOSInjectionProject/
 
+# NPM ephemera
 node_client/package-lock.json
